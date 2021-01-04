@@ -24,7 +24,7 @@ my_data['review'] = my_data['review'].apply(remove_special_characters)
 
 my_data['review'] = my_data['review'].apply(simple_stemmer)
 
-#set stopwords to english
+#set stopwords/keywords to english
 stop = set(stopwords.words('english'))
 print(stop)
 
@@ -69,8 +69,8 @@ linear_svm_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_tra
 # Naive Bayes for bag of words and tfidf features
 bayes_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
 
-# word cloud for positive review words
+# view with plot the positive review words
 positive_review(norm_train_reviews)
 
-# word cloud for negative review words
+# view with plot the negative review words
 negative_review(norm_train_reviews)
