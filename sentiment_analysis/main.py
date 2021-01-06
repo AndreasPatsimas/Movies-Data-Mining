@@ -18,6 +18,7 @@ my_data = import_data_csv()
 
 split(my_data)
 
+# pre-process
 my_data['review'] = my_data['review'].apply(denoise_text)
 
 my_data['review'] = my_data['review'].apply(remove_special_characters)
@@ -48,7 +49,7 @@ tf_idf_execution = execute_tf_idf(norm_train_reviews, norm_test_reviews)
 tv_train_reviews = tf_idf_execution.get('tv_train_reviews')
 tv_test_reviews = tf_idf_execution.get('tv_test_reviews')
 
-#labeling the sentient data
+#labeling the sentiment data
 lb=LabelBinarizer()
 #transformed sentiment data
 sentiment_data = lb.fit_transform(my_data['sentiment'])
