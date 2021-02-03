@@ -33,11 +33,9 @@ my_data['review']=my_data['review'].apply(remove_stopwords)
 
 #normalized train reviews
 norm_train_reviews = my_data.review[:40000]
-print(norm_train_reviews[0])
 
 #Normalized test reviews
 norm_test_reviews = my_data.review[40000:]
-print(norm_test_reviews[45005])
 
 # execute bag of words
 bow_execution = execute_bow(norm_train_reviews, norm_test_reviews)

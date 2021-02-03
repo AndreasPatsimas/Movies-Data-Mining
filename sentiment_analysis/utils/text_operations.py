@@ -15,7 +15,7 @@ def remove_special_characters(text, remove_digits=True):
     text=re.sub(pattern,'',text)
     return text
 
-#Stemming the text
+#Streaming the text
 def simple_stemmer(text):
     ps=nltk.porter.PorterStemmer()
     text= ' '.join([ps.stem(word) for word in text.split()])
