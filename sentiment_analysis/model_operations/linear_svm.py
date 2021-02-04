@@ -30,6 +30,13 @@ def linear_svm_accuracy(test_sentiments, svm_bow_predict, svm_tfidf_predict):
     svm_tfidf_score = accuracy_score(test_sentiments, svm_tfidf_predict)
     print("svm_tfidf_score :", svm_tfidf_score)
 
+def give_linear_svm_accuracy(test_sentiments, svm_bow_predict, svm_tfidf_predict):
+    # Accuracy score for bag of words
+    svm_bow_score = accuracy_score(test_sentiments, svm_bow_predict)
+    # Accuracy score for tfidf features
+    svm_tfidf_score = accuracy_score(test_sentiments, svm_tfidf_predict)
+    return svm_bow_score, svm_tfidf_score
+
 def linear_svm_classification_report(test_sentiments, svm_bow_predict, svm_tfidf_predict):
     # Classification report for bag of words
     svm_bow_report = classification_report(test_sentiments, svm_bow_predict, target_names=['Positive', 'Negative'])
@@ -55,6 +62,10 @@ def linear_svm_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv
 
     linear_svm_accuracy(test_sentiments, svm_bow_predict, svm_tfidf_predict)
 
+    svm_bow_score, svm_tf_idf_score = give_linear_svm_accuracy(test_sentiments, svm_bow_predict, svm_tfidf_predict)
+
     linear_svm_classification_report(test_sentiments, svm_bow_predict, svm_tfidf_predict)
 
     linear_svm_confusion_matrix(test_sentiments, svm_bow_predict, svm_tfidf_predict)
+
+    return svm_bow_score, svm_tf_idf_score

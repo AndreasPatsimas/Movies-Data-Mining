@@ -33,6 +33,13 @@ def lr_accuracy(test_sentiments, lr_bow_predict, lr_tf_idf_predict):
     lr_tf_idf_score = accuracy_score(test_sentiments, lr_tf_idf_predict)
     print("lr_tfidf_score :", lr_tf_idf_score)
 
+def lr_give_accuracy(test_sentiments, lr_bow_predict, lr_tf_idf_predict):
+    # Accuracy score for bag of words
+    lr_bow_score = accuracy_score(test_sentiments, lr_bow_predict)
+    # Accuracy score for tfidf features
+    lr_tf_idf_score = accuracy_score(test_sentiments, lr_tf_idf_predict)
+    return lr_bow_score, lr_tf_idf_score
+
 def lr_classification_report(test_sentiments, lr_bow_predict, lr_tf_idf_predict):
     # Classification report for bag of words
     lr_bow_report = classification_report(test_sentiments, lr_bow_predict, target_names=['Positive', 'Negative'])
@@ -58,6 +65,16 @@ def lr_regression_execution(cv_train_reviews, cv_test_reviews, train_sentiments,
 
     lr_accuracy(test_sentiments, lr_bow_predict, lr_tf_idf_predict)
 
+    lr_bow_score, lr_tf_idf_score = lr_give_accuracy(test_sentiments, lr_bow_predict, lr_tf_idf_predict)
+
     lr_classification_report(test_sentiments, lr_bow_predict, lr_tf_idf_predict)
 
     lr_confusion_matrix(test_sentiments, lr_bow_predict, lr_tf_idf_predict)
+
+    return lr_bow_score, lr_tf_idf_score
+
+
+
+
+
+

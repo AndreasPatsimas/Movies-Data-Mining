@@ -30,6 +30,13 @@ def bayes_accuracy(test_sentiments, mnb_bow_predict, mnb_tfidf_predict):
     mnb_tfidf_score = accuracy_score(test_sentiments, mnb_tfidf_predict)
     print("mnb_tfidf_score :", mnb_tfidf_score)
 
+def give_bayes_accuracy(test_sentiments, mnb_bow_predict, mnb_tfidf_predict):
+    # Accuracy score for bag of words
+    mnb_bow_score = accuracy_score(test_sentiments, mnb_bow_predict)
+    # Accuracy score for tfidf features
+    mnb_tfidf_score = accuracy_score(test_sentiments, mnb_tfidf_predict)
+    return mnb_bow_score, mnb_tfidf_score
+
 def bayes_classification_report(test_sentiments, mnb_bow_predict, mnb_tfidf_predict):
     # Classification report for bag of words
     mnb_bow_report = classification_report(test_sentiments, mnb_bow_predict, target_names=['Positive', 'Negative'])
@@ -55,6 +62,10 @@ def bayes_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_trai
 
     bayes_accuracy(test_sentiments, mnb_bow_predict, mnb_tfidf_predict)
 
+    mnb_bow_score, mnb_tfidf_score = give_bayes_accuracy(test_sentiments, mnb_bow_predict, mnb_tfidf_predict)
+
     bayes_classification_report(test_sentiments, mnb_bow_predict, mnb_tfidf_predict)
 
     bayes_confusion_matrix(test_sentiments, mnb_bow_predict, mnb_tfidf_predict)
+
+    return mnb_bow_score, mnb_tfidf_score
