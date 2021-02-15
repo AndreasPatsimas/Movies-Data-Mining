@@ -10,19 +10,19 @@ tokenizer = ToktokTokenizer()
 stopword_list = nltk.corpus.stopwords.words('english')
 
 #Define function for removing special characters
-def remove_special_characters(text, remove_digits=True):
+def drop_special_characters(text, remove_digits=True):
     pattern=r'[^a-zA-z0-9\s]'
     text=re.sub(pattern,'',text)
     return text
 
 #Streaming the text
-def simple_stemmer(text):
+def text_streamer(text):
     ps=nltk.porter.PorterStemmer()
     text= ' '.join([ps.stem(word) for word in text.split()])
     return text
 
 #removing the stopwords/keywords
-def remove_stopwords(text, is_lower_case=False):
+def drop_stopwords(text, is_lower_case=False):
     tokens = tokenizer.tokenize(text)
     tokens = [token.strip() for token in tokens]
     if is_lower_case:

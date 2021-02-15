@@ -1,6 +1,6 @@
 from sentiment_analysis.my_imports.import_data import import_data_csv
 from sentiment_analysis.my_splits.split_data import split
-from sentiment_analysis.methodologies.bag_of_words import execute_bow
+from sentiment_analysis.methodologies.bag_of_words import execute_bag_of_words
 from sentiment_analysis.methodologies.tf_idf import execute_tf_idf
 
 from sentiment_analysis.model_operations.lr_regression import lr_regression_execution
@@ -9,44 +9,49 @@ from sentiment_analysis.model_operations.naive_bayes import bayes_execution
 from sentiment_analysis.model_operations.k_neighbors import knc_execution
 from sentiment_analysis.world_cloud_reviews.review import positive_review, negative_review
 
-from sentiment_analysis.utils.text_format import denoise_text
-from sentiment_analysis.utils.text_operations import remove_special_characters, simple_stemmer, remove_stopwords
-
+from sentiment_analysis.utils.text_format import remove_text_noise
+from sentiment_analysis.utils.text_operations import drop_special_characters, text_streamer, drop_stopwords
+import seaborn as sns
 from sklearn.preprocessing import LabelBinarizer
 from nltk.corpus import stopwords
 #for plots
 from sentiment_analysis.plots.plots import plot_accuracies
 
+import tensorflow as tf
+import tensorflow_hub as hub
+from sklearn.model_selection import train_test_split
+
 my_data = import_data_csv()
+
+sns.set(style = "darkgrid" , font_scale = 1.2)
+sns.countplot(my_data.sentiment)
 
 split(my_data)
 
 # pre-process
-my_data['review'] = my_data['review'].apply(denoise_text)
+my_data['review'] = my_data['review'].apply(remove_text_noise)
 
-my_data['review'] = my_data['review'].apply(remove_special_characters)
+my_data['review'] = my_data['review'].apply(drop_special_characters)
 
-my_data['review'] = my_data['review'].apply(simple_stemmer)
+my_data['review'] = my_data['review'].apply(text_streamer)
 
-#set stopwords/keywords to english
+#set stopwords to english
 stop = set(stopwords.words('english'))
 print(stop)
 
-my_data['review']=my_data['review'].apply(remove_stopwords)
+my_data['review']=my_data['review'].apply(drop_stopwords)
 
-#normalized train reviews
-norm_train_reviews = my_data.review[:40000]
+normalized_train_reviews = my_data.review[:40000]
 
-#Normalized test reviews
-norm_test_reviews = my_data.review[40000:]
+normalized_test_reviews = my_data.review[40000:]
 
 # execute bag of words
-bow_execution = execute_bow(norm_train_reviews, norm_test_reviews)
-cv_train_reviews = bow_execution.get('cv_train_reviews')
-cv_test_reviews = bow_execution.get('cv_test_reviews')
+bag_of_words_execution = execute_bag_of_words(normalized_train_reviews, normalized_test_reviews)
+cv_train_reviews = bag_of_words_execution.get('cv_train_reviews')
+cv_test_reviews = bag_of_words_execution.get('cv_test_reviews')
 
 # execute tf-idf
-tf_idf_execution = execute_tf_idf(norm_train_reviews, norm_test_reviews)
+tf_idf_execution = execute_tf_idf(normalized_train_reviews, normalized_test_reviews)
 tv_train_reviews = tf_idf_execution.get('tv_train_reviews')
 tv_test_reviews = tf_idf_execution.get('tv_test_reviews')
 
@@ -63,9 +68,6 @@ print(train_sentiments)
 print(test_sentiments)
 
 # lr_regression execution
-lr_regression_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
-
-# lr_regression execution
 lr_bow_score, lr_tf_idf_score = lr_regression_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
 
 # linear svm
@@ -77,18 +79,57 @@ bayes_bow_score, bayes_tf_idf_score = bayes_execution(cv_train_reviews, cv_test_
 #KNeighbors
 knc_bow_score, knc_tf_idf_score = knc_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
 
+############# tensorflow ##################################################
+y = sentiment_data
+X = my_data.drop(labels=['sentiment'], axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2001)
+
+s = my_data['review'].to_numpy()
+print(s)
+
+embed = hub.load("https://tfhub.dev/google/nnlm-en-dim50/2")
+embeddings = embed(s)
+
+hub_layer = hub.KerasLayer("https://tfhub.dev/google/nnlm-en-dim50/2", input_shape=[], dtype=tf.string)
+
+model = tf.keras.Sequential()
+model.add(hub_layer)
+model.add(tf.keras.layers.Dense(16, activation='relu'))
+model.add(tf.keras.layers.Dense(1))
+
+model.summary()
+
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=8,
+    validation_data=(X_test, y_test)
+)
+
+results = model.evaluate(X_test, y_test)
+
+for name, value in zip(model.metrics_names, results):
+  print("%s: %.3f" % (name, value))
+
+#############################################################################
+
 # view with plot the positive review words
-positive_review(norm_train_reviews)
+positive_review(normalized_train_reviews)
 
 # view with plot the negative review words
-negative_review(norm_train_reviews)
+negative_review(normalized_train_reviews)
 
 #plot bow accuracies
 accuracies = [lr_bow_score, svm_bow_score, bayes_bow_score,knc_bow_score]
-algorithms = ['Rinear Regression', 'SVM', 'Bayes Classifier','KNeighbors Classifier']
+algorithms = ['Logistic Regression', 'SVM', 'Bayes Classifier','KNeighbors Classifier']
 plot_accuracies(accuracies,algorithms)
 
 #plot tf_idf accuracies
 accuracies = [ lr_tf_idf_score,  svm_tf_idf_score,  bayes_tf_idf_score, knc_tf_idf_score]
-algorithms = ['Rinear Regression', 'SVM', 'Bayes Classifier', 'KNeighbors Classifier']
+algorithms = ['Logistic Regression', 'SVM', 'Bayes Classifier', 'KNeighbors Classifier']
 plot_accuracies(accuracies,algorithms)
