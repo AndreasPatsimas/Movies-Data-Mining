@@ -16,12 +16,23 @@ from sklearn.preprocessing import LabelBinarizer
 from nltk.corpus import stopwords
 #for plots
 from sentiment_analysis.plots.plots import plot_accuracies
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 import tensorflow_hub as hub
 from sklearn.model_selection import train_test_split
 
 my_data = import_data_csv()
+
+fig,(ax1,ax2)=plt.subplots(1,2,figsize=(12,8))
+text_len=my_data[my_data['sentiment'] == 'positive']['review'].str.split().map(lambda x: len(x))
+ax1.hist(text_len,color='purple')
+ax1.set_title('Positive Reviews')
+text_len=my_data[my_data['sentiment'] == 'negative']['review'].str.split().map(lambda x: len(x))
+ax2.hist(text_len,color='blue')
+ax2.set_title('Negative Reviews')
+fig.suptitle('Words per sentence')
+plt.show()
 
 sns.set(style = "darkgrid" , font_scale = 1.2)
 sns.countplot(my_data.sentiment)
@@ -41,19 +52,19 @@ print(stop)
 
 my_data['review']=my_data['review'].apply(drop_stopwords)
 
-normalized_train_reviews = my_data.review[:40000]
+normal_reviews_train = my_data.review[:40000]
 
-normalized_test_reviews = my_data.review[40000:]
+normal_reviews_test = my_data.review[40000:]
 
 # execute bag of words
-bag_of_words_execution = execute_bag_of_words(normalized_train_reviews, normalized_test_reviews)
-cv_train_reviews = bag_of_words_execution.get('cv_train_reviews')
-cv_test_reviews = bag_of_words_execution.get('cv_test_reviews')
+bag_of_words_execution = execute_bag_of_words(normal_reviews_train, normal_reviews_test)
+count_vect_train_reviews = bag_of_words_execution.get('cv_train_reviews')
+count_vect_test_reviews = bag_of_words_execution.get('cv_test_reviews')
 
 # execute tf-idf
-tf_idf_execution = execute_tf_idf(normalized_train_reviews, normalized_test_reviews)
-tv_train_reviews = tf_idf_execution.get('tv_train_reviews')
-tv_test_reviews = tf_idf_execution.get('tv_test_reviews')
+tf_idf_execution = execute_tf_idf(normal_reviews_train, normal_reviews_test)
+tf_idf_vect_train_reviews = tf_idf_execution.get('tv_train_reviews')
+tf_idf_vect_test_reviews = tf_idf_execution.get('tv_test_reviews')
 
 #labeling the sentiment data
 lb=LabelBinarizer()
@@ -68,16 +79,16 @@ print(train_sentiments)
 print(test_sentiments)
 
 # lr_regression execution
-lr_bow_score, lr_tf_idf_score = lr_regression_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
+lr_bow_score, lr_tf_idf_score = lr_regression_execution(count_vect_train_reviews, count_vect_test_reviews, train_sentiments, tf_idf_vect_train_reviews, tf_idf_vect_test_reviews, test_sentiments)
 
 # linear svm
-svm_bow_score, svm_tf_idf_score = linear_svm_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
+svm_bow_score, svm_tf_idf_score = linear_svm_execution(count_vect_train_reviews, count_vect_test_reviews, train_sentiments, tf_idf_vect_train_reviews, tf_idf_vect_test_reviews, test_sentiments)
 
 # Naive Bayes for bag of words and tfidf features
-bayes_bow_score, bayes_tf_idf_score = bayes_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
+bayes_bow_score, bayes_tf_idf_score = bayes_execution(count_vect_train_reviews, count_vect_test_reviews, train_sentiments, tf_idf_vect_train_reviews, tf_idf_vect_test_reviews, test_sentiments)
 
 #KNeighbors
-knc_bow_score, knc_tf_idf_score = knc_execution(cv_train_reviews, cv_test_reviews, train_sentiments, tv_train_reviews, tv_test_reviews, test_sentiments)
+knc_bow_score, knc_tf_idf_score = knc_execution(count_vect_train_reviews, count_vect_test_reviews, train_sentiments, tf_idf_vect_train_reviews, tf_idf_vect_test_reviews, test_sentiments)
 
 ############# tensorflow ##################################################
 y = sentiment_data
@@ -119,10 +130,10 @@ for name, value in zip(model.metrics_names, results):
 #############################################################################
 
 # view with plot the positive review words
-positive_review(normalized_train_reviews)
+positive_review(normal_reviews_train)
 
 # view with plot the negative review words
-negative_review(normalized_train_reviews)
+negative_review(normal_reviews_train)
 
 #plot bow accuracies
 accuracies = [lr_bow_score, svm_bow_score, bayes_bow_score,knc_bow_score]
