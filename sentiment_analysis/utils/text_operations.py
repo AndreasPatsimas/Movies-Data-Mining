@@ -3,24 +3,25 @@ import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
 
 nltk.download('stopwords')
-
+# text normalization
+#Tokenization of text
 tokenizer = ToktokTokenizer()
-
+#Setting English stopwords
 stopword_list = nltk.corpus.stopwords.words('english')
 
-
+#Define function for removing special characters
 def drop_special_characters(text, remove_digits=True):
     pattern=r'[^a-zA-z0-9\s]'
     text=re.sub(pattern,'',text)
     return text
 
-
+#Streaming the text
 def text_streamer(text):
     ps=nltk.porter.PorterStemmer()
     text= ' '.join([ps.stem(word) for word in text.split()])
     return text
 
-
+#removing the stopwords/keywords
 def drop_stopwords(text, is_lower_case=False):
     tokens = tokenizer.tokenize(text)
     tokens = [token.strip() for token in tokens]

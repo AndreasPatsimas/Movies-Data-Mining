@@ -1,15 +1,15 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-def execute_tf_idf(normalized_reviews_train, normalized_reviews_test):
+def execute_tf_idf(norm_train_reviews, norm_test_reviews):
 
     tv = TfidfVectorizer(min_df=0, max_df=1, use_idf=True, ngram_range=(1, 3))
 
-    tfidf_vect_reviews_train = tv.fit_transform(normalized_reviews_train)
+    tv_train_reviews = tv.fit_transform(norm_train_reviews)
 
-    tfidf_vect_reviews_test = tv.transform(normalized_reviews_test)
-    print('TFIDF_Vectorizer_reviews_train:', tfidf_vect_reviews_train.shape)
-    print('TFIDF_Vectorizer_reviews_test:', tfidf_vect_reviews_test.shape)
+    tv_test_reviews = tv.transform(norm_test_reviews)
+    print('Tfidf_train:', tv_train_reviews.shape)
+    print('Tfidf_test:', tv_test_reviews.shape)
 
-    my_dictionary = {'tfidf_vect_reviews_train': tfidf_vect_reviews_train, 'tfidf_vect_reviews_test': tfidf_vect_reviews_test}
+    my_dictionary = {'tv_train_reviews': tv_train_reviews, 'tv_test_reviews': tv_test_reviews}
 
     return my_dictionary
